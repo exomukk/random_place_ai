@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="vi" data-theme="dark">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TouchGrass — Mở Hòm Đi Chơi</title>
+  <meta name="description" content="Random hoạt động + địa điểm quanh Hà Nội kiểu mở hòm CS2." />
+  <link rel="stylesheet" href="css/style.css" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700;800&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="bg"></div>
+
+  <header class="topbar">
+    <div class="container topbar-inner">
+      <div class="logo"><span class="logo-dot"></span>Touch<strong>Grass</strong> <span class="logo-sub">CASE OPENING</span></div>
+      <nav class="tabs">
+        <button class="tab active" data-tab="home">Mở hòm</button>
+        <button class="tab" data-tab="places">Kho địa điểm <span class="count" id="aiTotalCount">0</span></button>
+      </nav>
+      <button id="soundBtn" class="ghost-btn" title="Bật/tắt tiếng">Âm thanh: bật</button>
+    </div>
+  </header>
+
+  <main class="container">
+    <section id="tab-home" class="tab-panel active">
+    <p class="hero-sub"><b id="ideaCount">0</b> hoạt động quanh Hà Nội. Mở hòm 1 ra hoạt động, mở hòm 2 ra địa điểm. Địa điểm AI gom được hiện ở tab Kho địa điểm.</p>
+
+    <details class="filter-box">
+      <summary>Lọc (tùy chọn, mặc định tất cả)</summary>
+      <div class="filter-row">
+        <span class="filter-label">Vibe</span>
+        <div class="chips" id="filterVibe">
+          <button class="chip active" data-value="all">Tất cả</button>
+          <button class="chip" data-value="chill">Chill</button>
+          <button class="chip" data-value="van-dong">Vận động</button>
+          <button class="chip" data-value="an-uong">Ăn uống</button>
+          <button class="chip" data-value="kham-pha">Khám phá</button>
+          <button class="chip" data-value="van-hoa">Văn hoá</button>
+        </div>
+      </div>
+      <div class="filter-row">
+        <span class="filter-label">Tiền</span>
+        <div class="chips" id="filterBudget">
+          <button class="chip active" data-value="all">Tất cả</button>
+          <button class="chip" data-value="free">0đ</button>
+          <button class="chip" data-value="re">Dưới 100k</button>
+          <button class="chip" data-value="trungbinh">100-300k</button>
+          <button class="chip" data-value="cao">300k+</button>
+        </div>
+      </div>
+    </details>
+
+    <!-- HÒM 1: HOẠT ĐỘNG -->
+    <section class="case">
+      <div class="case-head">
+        <h2>Hòm 1 — Hoạt động</h2>
+        <button id="openActBtn" class="open-btn">MỞ HÒM</button>
+      </div>
+      <div class="reel-wrap">
+        <div class="reel-marker"></div>
+        <div class="reel-track" id="actTrack"></div>
+      </div>
+      <div id="actResult" class="winner hidden"></div>
+    </section>
+
+    <!-- HÒM 2: ĐỊA ĐIỂM -->
+    <section class="case">
+      <div class="case-head">
+        <h2>Hòm 2 — Địa điểm</h2>
+        <button id="openPlaceBtn" class="open-btn" disabled>MỞ HÒM</button>
+      </div>
+      <p class="case-hint" id="placeHint">Mở hòm 1 trước đã.</p>
+      <div class="reel-wrap small">
+        <div class="reel-marker"></div>
+        <div class="reel-track" id="placeTrack"></div>
+      </div>
+      <div id="placeResult" class="winner hidden"></div>
+    </section>
+
+    <footer class="foot">
+      <span>Ra ngoài đi, ở nhà hoài mốc người.</span>
+      <span class="muted">Nhấn Space để mở hòm 1</span>
+    </footer>
+    </section>
+
+    <section id="tab-places" class="tab-panel">
+      <h2 class="page-title">Kho AI <span class="muted" id="aiActCount"></span></h2>
+      <p class="hero-sub">Chọn 1 hoạt động, dán Gemini API key, bấm Gom địa điểm. AI sẽ liệt kê 50-100 chỗ cụ thể ở Hà Nội, tự lưu vào máy, hòm 2 dùng luôn kho này để quay.</p>
+
+      <div class="card form-card">
+        <h3 class="mini-title">A — Gom thêm hoạt động mới</h3>
+        <p class="howto">Hỏi AI khoảng 100 hoạt động khác ngoài list có sẵn (thể thao lạ, trải nghiệm, ăn uống, khám phá...). Hoạt động mới tự vào hòm 1, có nút gom địa điểm tự động bên dưới.</p>
+        <div class="btn-row">
+          <button id="fetchActsBtn" class="open-btn small">GOM 100 HOẠT ĐỘNG</button>
+          <button id="stopActsBtn" class="ghost-btn hidden">Dừng</button>
+          <button id="clearActsBtn" class="ghost-btn">Xoá hoạt động AI</button>
+        </div>
+        <div class="progress hidden" id="actProgress"><div id="actBar"></div></div>
+        <div id="actStatus" class="ai-status">Chưa gom hoạt động. Cần API key ở mục B.</div>
+      </div>
+
+      <div class="card form-card">
+        <h3 class="mini-title">B — API key + gom địa điểm</h3>
+        <div class="form-row-2">
+          <div class="form-field">
+            <label>Hoạt động</label>
+            <select id="aiAct"></select>
+          </div>
+          <div class="form-field">
+            <label>Số lượng mục tiêu</label>
+            <select id="aiTarget">
+              <option value="50" selected>50 địa điểm</option>
+              <option value="75">75 địa điểm</option>
+              <option value="100">100 địa điểm</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-field">
+          <label>Gemini API key (chỉ lưu trong trình duyệt của bạn)</label>
+          <input id="geminiKey" type="password" maxlength="200" placeholder="Dán key bắt đầu bằng AIza..." autocomplete="off" />
+        </div>
+        <div class="form-row-2">
+          <div class="form-field">
+            <label>Model (tự điền, ví dụ: gemini-2.0-flash)</label>
+            <input id="geminiModel" list="modelSuggest" maxlength="80" placeholder="gemini-2.0-flash" autocomplete="off" />
+            <datalist id="modelSuggest">
+              <option value="gemini-2.0-flash"></option>
+              <option value="gemini-2.0-flash-lite"></option>
+              <option value="gemini-2.5-flash"></option>
+              <option value="gemini-1.5-flash"></option>
+              <option value="gemini-1.5-pro"></option>
+            </datalist>
+          </div>
+          <div class="form-field">
+            <label>&nbsp;</label>
+            <div class="btn-row">
+              <button id="saveKeyBtn" class="map-btn secondary light">Lưu key</button>
+              <button id="delKeyBtn" class="map-btn secondary light">Xoá key</button>
+            </div>
+          </div>
+        </div>
+        <div class="form-field">
+          <label>Prompt tự viết (tùy chọn — thay prompt mặc định)</label>
+          <textarea id="customPrompt" rows="3" maxlength="2000" placeholder="VD: Chỉ liệt kê quán cafe mở sau 22h ở Đống Đa, giá dưới 50k... Viết {{HOAT_DONG}} vào chỗ muốn chèn tên hoạt động. Bỏ trống = dùng prompt mặc định."></textarea>
+        </div>
+        <div class="btn-row">
+          <button id="fetchAiBtn" class="open-btn small">GOM ĐỊA ĐIỂM</button>
+          <button id="stopAiBtn" class="ghost-btn hidden">Dừng</button>
+          <button id="clearAiBtn" class="ghost-btn">Xoá kho hoạt động này</button>
+        </div>
+        <div class="form-row-2">
+          <div class="form-field">
+            <label>Tự động gom địa điểm cho hoạt động mới</label>
+            <select id="autoPlaces">
+              <option value="0">Tắt — chỉ gom hoạt động</option>
+              <option value="10" selected>Bật — 10 chỗ / hoạt động</option>
+              <option value="20">Bật — 20 chỗ / hoạt động</option>
+            </select>
+          </div>
+          <div class="form-field">
+            <label>&nbsp;</label>
+            <div class="btn-row">
+              <button id="autoFillBtn" class="map-btn secondary light">Gom địa điểm cho mọi hoạt động chưa có</button>
+            </div>
+          </div>
+        </div>
+        <div class="progress hidden" id="aiProgress"><div id="aiBar"></div></div>
+        <div id="aiStatus" class="ai-status">Chưa gom. Lấy key miễn phí 2 phút tại aistudio.google.com/apikey</div>
+        <div class="howto">Mỗi lần gọi AI trả về khoảng 15-20 chỗ, web tự gọi nhiều lần cho tới khi đủ số lượng, bỏ trùng tên, tự lưu. Không có key vẫn mở hòm bình thường bằng list gợi ý sẵn.</div>
+      </div>
+
+      <h3 class="section-title">Kho đã gom <span class="muted" id="aiListTitle"></span></h3>
+      <div id="aiPlaceList" class="place-list"><div class="empty-box">Chưa có gì. Chọn hoạt động rồi bấm Gom địa điểm.</div></div>
+    </section>
+  </main>
+
+  <div id="toast" class="toast"></div>
+
+  <script src="js/ideas.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
