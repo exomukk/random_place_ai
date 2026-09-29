@@ -7,7 +7,6 @@ Random hoạt động + địa điểm quanh Hà Nội kiểu mở hòm CS2. Web
 Mở file `index.html` bằng browser, hoặc chạy server tĩnh:
 
 ```powershell
-cd "F:\Code\web film"
 python -m http.server 8000
 # mở http://localhost:8000
 ```
